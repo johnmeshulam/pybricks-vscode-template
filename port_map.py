@@ -21,11 +21,12 @@ def map_ports() -> list[ColorSensor | Motor | ForceSensor | UltrasonicSensor]:
     available_device_types = (ColorSensor, Motor, ForceSensor, UltrasonicSensor)
 
     devices = []
-
-    for port in PORTS:
+    for port_index in range(6):
+        port = PORTS[port_index]
+        devices.append(None)
         for device_type in available_device_types:
             try:
-                devices.append(device_type(port))
+                devices[port_index] = device_type(port)
                 break
             except OSError:
                 ...
@@ -50,20 +51,22 @@ def generate_code_difinition(
 def print_hardware_difinitions(
     devices: list[ColorSensor | Motor | ForceSensor | UltrasonicSensor],
 ) -> None:
-    for i in range(6):
-        port = PORTS[i]
-        device = devices[i]
-        device_name: str = get_device_name(device)
-        print(f"{device_name.lower()} = {device_name}({port})")
+    for port_index in range(6):
+        port = PORTS[port_index]
+        device = devices[port_index]
+        if device:
+            device_name: str = get_device_name(device)
+            print(f"{device_name.lower()} = {device_name}({port})")
 
 
 def indicate_device(
     device: ColorSensor | Motor | ForceSensor | UltrasonicSensor,
 ) -> None:
-    if type(device) == ColorSensor:
-        device.lights.on(100)
-    elif type(device) == Motor:
-        device.dc(100)
+    if device:
+        if type(device) == ColorSensor:
+            device.lights.on(100)
+        elif type(device) == Motor:
+            device.dc(100)
 
 
 def indicate_port_on_matrix(port: Port) -> None:
@@ -73,10 +76,11 @@ def indicate_port_on_matrix(port: Port) -> None:
 
 
 def stop_device(device: ColorSensor | Motor | ForceSensor | UltrasonicSensor) -> None:
-    if type(device) == ColorSensor:
-        device.lights.off()
-    elif type(device) == Motor:
-        device.stop()
+    if device:
+        if type(device) == ColorSensor:
+            device.lights.off()
+        elif type(device) == Motor:
+            device.stop()
 
 
 def signal_devices(
